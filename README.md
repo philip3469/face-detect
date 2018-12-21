@@ -1,1 +1,1 @@
-# face-detect
+face detect by mtcnn-java
