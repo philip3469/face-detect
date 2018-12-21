@@ -1,4 +1,4 @@
-package net.tzolov.cv.mtcnn.sample;
+package face.detect;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
