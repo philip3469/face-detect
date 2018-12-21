@@ -1,4 +1,4 @@
-package net.philip.face.detect;
+package net.philip.face.mtcnn;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 
 import org.springframework.core.io.DefaultResourceLoader;
 
-import net.philip.face.detect.Box.Rect;
+import net.philip.face.mtcnn.Box.Rect;
 
 public class Utils {
 	
@@ -53,7 +53,7 @@ public class Utils {
 	// Log.i("Utils","[*] error"+e);
 	// }
 	// }
-	// 在图中画点
+	// 在图中画�?
 	// public static void drawPoints(BufferedImage BufferedImage, Point[]
 	// landmark){
 	// for (int i=0;i<landmark.length;i++){
@@ -64,7 +64,7 @@ public class Utils {
 	// }
 	// }
 	// Flip alone diagonal
-	// 对角线翻转。data大小原先为h*w*stride，翻转后变成w*h*stride
+	// 对角线翻转�?�data大小原先为h*w*stride，翻转后变成w*h*stride
 	public static void flip_diag(float[] data, int h, int w, int stride) {
 		float[] tmp = new float[w * h * stride];
 		for (int i = 0; i < w * h * stride; i++)
@@ -76,7 +76,7 @@ public class Utils {
 			}
 	}
 
-	// src转为二维存放到dst中
+	// src转为二维存放到dst�?
 	public static void expand(float[] src, float[][] dst) {
 		int idx = 0;
 		for (int y = 0; y < dst.length; y++)
@@ -84,7 +84,7 @@ public class Utils {
 				dst[y][x] = src[idx++];
 	}
 
-	// src转为三维存放到dst中
+	// src转为三维存放到dst�?
 	public static void expand(float[] src, float[][][] dst) {
 		int idx = 0;
 		for (int y = 0; y < dst.length; y++)

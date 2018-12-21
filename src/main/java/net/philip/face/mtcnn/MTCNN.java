@@ -1,4 +1,4 @@
-package net.philip.face.detect;
+package net.philip.face.mtcnn;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -42,7 +42,7 @@ public class MTCNN {
 	private static final String[] ONetOutName = new String[] { "onet/prob1:0", "onet/conv6-2/conv6-2:0",
 			"onet/conv6-3/conv6-3:0" };
 	// 安卓相关
-	public long lastProcessTime; // 最后一张图片处理的时间ms
+	public long lastProcessTime; // �?后一张图片处理的时间ms
 
 	public void loadModel() throws Exception {
 
@@ -65,7 +65,7 @@ public class MTCNN {
 		}
 	}
 
-	// 读取BufferedImage像素值，预处理(-127.5 /128)，转化为一维数组返回
+	// 读取BufferedImage像素值，预处�?(-127.5 /128)，转化为�?维数组返�?
 	private float[] normalizeImage(BufferedImage image) {
 		int w = image.getWidth();
 		int h = image.getHeight();
@@ -89,7 +89,7 @@ public class MTCNN {
 	}
 
 	/*
-	 * 检测人脸,minSize是最小的人脸像素值
+	 * �?测人�?,minSize是最小的人脸像素�?
 	 */
 	private BufferedImage bufferedImageResize(BufferedImage bm, float scale) {
 
@@ -117,14 +117,14 @@ public class MTCNN {
 		return resizeImg;
 	}
 
-	// 输入前要翻转，输出也要翻转
+	// 输入前要翻转，输出也要翻�?
 	private int PNetForward(BufferedImage image, float[][] PNetOutProb, float[][][] PNetOutBias) {
 		int w = image.getWidth();
 		int h = image.getHeight();
 
 		float[] PNetIn = normalizeImage(image);
 		//翻转后变成w*h*stride
-		Utils.flip_diag(PNetIn, h, w, 3); // 沿着对角线翻转
+		Utils.flip_diag(PNetIn, h, w, 3); // 沿着对角线翻�?
 		// inferenceInterface.feed(PNetInName,PNetIn,1,w,h,3);
 		// inferenceInterface.run(PNetOutName,false);
 
@@ -146,13 +146,13 @@ public class MTCNN {
 		PNetOutP = out0.data().asFloat();
 		PNetOutB = out1.data().asFloat();
 
-		// 【写法一】先翻转，后转为2/3维数组
+		// 【写法一】先翻转，后转为2/3维数�?
 		Utils.flip_diag(PNetOutP, PNetOutSizeW, PNetOutSizeH, 2);
 		Utils.flip_diag(PNetOutB, PNetOutSizeW, PNetOutSizeH, 4);
 		Utils.expand(PNetOutB, PNetOutBias);
 		Utils.expandProb(PNetOutP, PNetOutProb);
 		/*
-		 * 【写法二】这个比较快，快了3ms。意义不大，用上面的方法比较直观 for (int y=0;y<PNetOutSizeH;y++) for
+		 * 【写法二】这个比较快，快�?3ms。意义不大，用上面的方法比较直观 for (int y=0;y<PNetOutSizeH;y++) for
 		 * (int x=0;x<PNetOutSizeW;x++){ int idx=PNetOutSizeH*x+y;
 		 * PNetOutProb[y][x]=PNetOutP[idx*2+1]; for(int i=0;i<4;i++)
 		 * PNetOutBias[y][x][i]=PNetOutB[idx*4+i]; }
@@ -186,7 +186,7 @@ public class MTCNN {
 						else if (method.equals("Min")) {
 							iou = 1.0f * areaIoU / (min(box.area(), box2.area()));
 						}
-						if (iou >= threshold) { // 删除prob小的那个框
+						if (iou >= threshold) { // 删除prob小的那个�?
 							if (box.score > box2.score)
 								box2.deleted = true;
 							else
@@ -236,14 +236,14 @@ public class MTCNN {
 	/*
 	 * NMS执行完后，才执行Regression (1) For each scale , use NMS with threshold=0.5 (2)
 	 * For all candidates , use NMS with threshold=0.7 (3) Calibrate Bounding
-	 * Box 注意：CNN输入图片最上面一行，坐标为[0..width,0]。所以BufferedImage需要对折后再跑网络;网络输出同理.
+	 * Box 注意：CNN输入图片�?上面�?行，坐标为[0..width,0]。所以BufferedImage�?要对折后再跑网络;网络输出同理.
 	 */
 	private Vector<Box> PNet(BufferedImage image, int minSize) {
 		int whMin = min(image.getWidth(), image.getHeight());
 		float currentFaceSize = minSize; // currentFaceSize=minSize/(factor^k)
 											// k=0,1,2... until excced whMin
 		Vector<Box> totalBoxes = new Vector<Box>();
-		// 【1】Image Paramid and Feed to Pnet
+		// �?1】Image Paramid and Feed to Pnet
 		while (currentFaceSize <= whMin) {
 			float scale = 12.0f / currentFaceSize;
 			// (1)Image Resize
@@ -278,7 +278,7 @@ public class MTCNN {
 		return Utils.updateBoxes(totalBoxes);
 	}
 
-	// 截取box中指定的矩形框(越界要处理)，并resize到size*size大小，返回数据存放到data中。
+	// 截取box中指定的矩形�?(越界要处�?)，并resize到size*size大小，返回数据存放到data中�??
 	public BufferedImage tmp_bm;
 
 	private BufferedImage crop_and_resize(BufferedImage BufferedImage, Box box, int size, float[] data) {
@@ -443,17 +443,17 @@ public class MTCNN {
 	}
 
 	/*
-	 * 参数： BufferedImage:要处理的图片 minFaceSize:最小的人脸像素值.(此值越大，检测越快) 返回： 人脸框
+	 * 参数�? BufferedImage:要处理的图片 minFaceSize:�?小的人脸像素�?.(此�?�越大，�?测越�?) 返回�? 人脸�?
 	 */
 	public Vector<Box> detectFaces(BufferedImage image, int minFaceSize) {
 		long t_start = System.currentTimeMillis();
-		// 【1】PNet generate candidate boxes
+		// �?1】PNet generate candidate boxes
 		Vector<Box> boxes = PNet(image, minFaceSize);
 		square_limit(boxes, image.getWidth(), image.getHeight());
-		// 【2】RNet
+		// �?2】RNet
 		boxes = RNet(image, boxes);
 		square_limit(boxes, image.getWidth(), image.getHeight());
-		// 【3】ONet
+		// �?3】ONet
 		boxes = ONet(image, boxes);
 		// return
 		System.out.println("[*]Mtcnn Detection Time:" + (System.currentTimeMillis() - t_start));

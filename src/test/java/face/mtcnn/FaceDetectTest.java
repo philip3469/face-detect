@@ -1,4 +1,4 @@
-package face.detect;
+package face.mtcnn;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -10,9 +10,9 @@ import org.springframework.core.io.DefaultResourceLoader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import net.philip.face.detect.Box;
-import net.philip.face.detect.MTCNN;
-import net.philip.face.detect.Utils;
+import net.philip.face.mtcnn.Box;
+import net.philip.face.mtcnn.MTCNN;
+import net.philip.face.mtcnn.Utils;
 
 public class FaceDetectTest {
 

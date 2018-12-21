@@ -1,4 +1,4 @@
-package net.philip.face.detect;
+package net.philip.face.mtcnn;
 
 
 
@@ -67,7 +67,7 @@ public class Box {
         box[3]=(int)(box[3]+h*bbr[3]);
         for (int i=0;i<4;i++) bbr[i]=0.0f;
     }
-    //当前box转为正方形
+    //当前box转为正方�?
     public void toSquareShape(){
         int w=width();
         int h=height();
