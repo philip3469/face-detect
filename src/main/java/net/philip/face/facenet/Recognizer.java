@@ -74,6 +74,13 @@ public class Recognizer {
 		}
 		return output;
 	}
+	
+	public INDArray getFaceFactor(Box box, BufferedImage img, int width, int height) throws Exception {
+		
+		INDArray imgData = imageLoader.asMatrix(img);
+		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), height, width);
+		return facenet.output(InceptionResNetV1.prewhiten(face))[1];
+	}
 
 	public Vector<Box> detectFaces(BufferedImage img) {
 		return mtcnn.detectFaces(img, minFaceSize);

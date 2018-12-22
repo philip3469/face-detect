@@ -1,11 +1,14 @@
 package net.philip.face;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.WindowConstants;
@@ -23,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 import net.philip.face.facenet.Recognizer;
+import net.philip.face.mtcnn.Box;
 
 public class DetectInCamera {
 	private static final Logger log = LoggerFactory.getLogger(DetectInCamera.class);
@@ -38,7 +42,7 @@ public class DetectInCamera {
 		Map<String, INDArray> faceTagMap = loadFaceTag(FACE_TAG_DIR, recognizer);
 
 		// camera detect
-		int camera_size = 400;
+		int camera_size = 800;
 		OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
 		grabber.setImageWidth(camera_size);
 		grabber.setImageHeight(camera_size);
@@ -54,26 +58,33 @@ public class DetectInCamera {
 			BufferedImage image = new BufferedImage(camera_size, camera_size, BufferedImage.TYPE_3BYTE_BGR);
 			Java2DFrameConverter.copy(frame, image);
 
-			INDArray[] testFacefactors = recognizer.getFaceFactor(image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
-			
-			// Vector<Box> detectFaces = recognizer.detectFaces(image);
-
-			if (null != testFacefactors) {
+			Vector<Box> detectFaces = recognizer.detectFaces(image);
+			for (Box box : detectFaces) {
+				INDArray factor = recognizer.getFaceFactor(box, image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
 				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
 				while (it.hasNext()) {
 					Entry<String, INDArray> next = it.next();
 					String name = next.getKey();
 					INDArray faceTagFactor = next.getValue();
-					double diff = faceCompareLoss(testFacefactors[0], faceTagFactor);
+					double diff = faceCompareLoss(factor, faceTagFactor);
 					if (diff < 1.1) {
 						// match
 						log.info("test face is: " + name + ", face compare loss is: " + diff);
 						// show detection result
-						canvas.setTitle(name);
+						// canvas.setTitle(name);
+
+						 Graphics g = image.getGraphics();
+						 g.setColor(Color.YELLOW);
+						 g.drawRect(box.left(), box.top(), box.width(),
+						 box.height());
+						 g.drawString(name, box.left() + 5, box.top() + 15);
+						 
+						 Java2DFrameConverter.copy(image, frame);
 						break;
 					}
 				}
 			}
+
 			canvas.showImage(frame);
 			Thread.sleep(50);// 图像刷新时间
 		}
@@ -89,9 +100,14 @@ public class DetectInCamera {
 		}
 		Collection<File> images = FileUtils.listFiles(dir, new String[] { "jpg" }, false);
 		for (File image : images) {
-			INDArray factor = recognizer.getFaceFactor(ImageIO.read(image), FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT)[0];
+			INDArray[] faceFactors = recognizer.getFaceFactor(ImageIO.read(image), FACE_RESIZE_WIDTH,
+					FACE_RESIZE_HEIGHT);
+			if (null == faceFactors) {
+				log.error("no face dected in {}", image.getName());
+				continue;
+			}
 			String name = StringUtils.substringBeforeLast(image.getName(), ".");
-			faceTagMap.put(name, factor);
+			faceTagMap.put(name, faceFactors[0]);
 			log.info("tag face loaded: {}", image.getName());
 		}
 		return faceTagMap;
