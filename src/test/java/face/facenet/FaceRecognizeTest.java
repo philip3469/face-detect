@@ -26,8 +26,8 @@ public class FaceRecognizeTest {
 		int height = 160;
 		BufferedImage img1 = ImageIO.read(new FileInputStream(dir + "fbb1.jpg"));
 		BufferedImage img2 = ImageIO.read(new FileInputStream(dir + "fbb2.jpg"));
-		INDArray factor1 = recognizer.getFaceFactor(img1, width, height);
-		INDArray factor2 = recognizer.getFaceFactor(img2, width, height);
+		INDArray factor1 = recognizer.getFaceFactor(img1, width, height)[0];
+		INDArray factor2 = recognizer.getFaceFactor(img2, width, height)[0];
 		System.out.println(calImgLoss(factor1, factor2));
 	}
 

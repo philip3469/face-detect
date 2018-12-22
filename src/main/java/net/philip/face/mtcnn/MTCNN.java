@@ -2,8 +2,6 @@ package net.philip.face.mtcnn;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.nd4j.linalg.indexing.NDArrayIndex.all;
-import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -16,7 +14,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.io.IOUtils;
-import org.datavec.image.loader.NativeImageLoader;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.tensorflow.conversion.graphrunner.GraphRunner;
@@ -25,7 +22,6 @@ import org.tensorflow.framework.ConfigProto;
 
 public class MTCNN {
 	
-	private static NativeImageLoader imageLoader = new NativeImageLoader();
 	// 参数
 	private float factor = 0.709f;
 	private float PNetThreshold = 0.6f;
@@ -317,6 +313,9 @@ public class MTCNN {
 	 */
 	private void RNetForward(float[] RNetIn, Vector<Box> boxes) {
 		int num = RNetIn.length / 24 / 24 / 3;
+		if(num==0){
+			return;
+		}
 		// feed & run
 		// inferenceInterface.feed(RNetInName,RNetIn,num,24,24,3);
 		// inferenceInterface.run(RNetOutName,false);
@@ -374,6 +373,9 @@ public class MTCNN {
 	 */
 	private void ONetForward(float[] ONetIn, Vector<Box> boxes) {
 		int num = ONetIn.length / 48 / 48 / 3;
+		if(num==0){
+			return;
+		}
 		// feed & run
 		// inferenceInterface.feed(ONetInName,ONetIn,num,48,48,3);
 		// inferenceInterface.run(ONetOutName,false);
@@ -466,35 +468,4 @@ public class MTCNN {
 		return boxes;
 	}
 	
-	public INDArray[] detect(BufferedImage image, int minFaceSize, int height, int width) throws Exception{
-		Vector<Box> faces = detectFaces(image, minFaceSize);
-		INDArray[] ret = new INDArray[faces.size()];
-		
-		for(int i = 0;i < ret.length;i++) {
-			Box box = faces.get(i);
-			ret[i] = imresample(imageLoader.asMatrix(image).get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), height, width);
-		}
-		return ret;
-	}
-	
-	private INDArray imresample(INDArray img, int hs, int ws) {
-		long[] shape = img.shape();
-		long h = shape[2];
-		long w = shape[3];
-		float dx = (float) w / ws;
-		float dy = (float) h / hs;
-		INDArray im_data = Nd4j.create(new long[] { 1, 3, hs, ws });
-		for (int a1 = 0; a1 < 3; a1++) {
-			for (int a2 = 0; a2 < hs; a2++) {
-				for (int a3 = 0; a3 < ws; a3++) {
-					im_data.putScalar(new long[] { 0, a1, a2, a3 },
-							img.getDouble(0, a1, (long) Math.floor(a2 * dy), (long) Math.floor(a3 * dx)));
-				}
-			}
-		}
-		return im_data;
-//		return fromImg(ImageLoader.toBufferedImage(toImage(img)
-//				.getScaledInstance(ws, hs, BufferedImage.SCALE_SMOOTH), 
-//				BufferedImage.TYPE_INT_RGB));
-	}
 }

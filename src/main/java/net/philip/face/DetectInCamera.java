@@ -8,9 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
+import javax.swing.WindowConstants;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,24 +37,48 @@ public class DetectInCamera {
 		// load face tag map with factor
 		Map<String, INDArray> faceTagMap = loadFaceTag(FACE_TAG_DIR, recognizer);
 
-		// test
-		BufferedImage input = ImageIO.read(new File("d:/14.jpg"));
-		INDArray testFaceFactor = recognizer.getFaceFactor(input, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
-
-		Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
-		while (it.hasNext()) {
-			Entry<String, INDArray> next = it.next();
-			String name = next.getKey();
-			INDArray faceTagFactor = next.getValue();
-			double diff = faceCompareLoss(testFaceFactor, faceTagFactor);
-			if (diff < 1.1) {
-				// match
-				log.info("test face is: " + name + ", face compare loss is: " + diff);
-				return;
+		// camera detect
+		int camera_size = 400;
+		OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
+		grabber.setImageWidth(camera_size);
+		grabber.setImageHeight(camera_size);
+		grabber.start();
+		CanvasFrame canvas = new CanvasFrame("Camera", 1);
+		canvas.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		canvas.setAlwaysOnTop(true);
+		while (true) {
+			if (!canvas.isVisible()) {
+				break;
 			}
-		}
+			Frame frame = grabber.grab();
+			BufferedImage image = new BufferedImage(camera_size, camera_size, BufferedImage.TYPE_3BYTE_BGR);
+			Java2DFrameConverter.copy(frame, image);
 
-		log.info("not match");
+			INDArray testFacefactor = recognizer.getFaceFactor(image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT)[0];
+
+			// Vector<Box> detectFaces = recognizer.detectFaces(image);
+
+			if (null != testFacefactor) {
+				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, INDArray> next = it.next();
+					String name = next.getKey();
+					INDArray faceTagFactor = next.getValue();
+					double diff = faceCompareLoss(testFacefactor, faceTagFactor);
+					if (diff < 1.1) {
+						// match
+						log.info("test face is: " + name + ", face compare loss is: " + diff);
+						// show detection result
+
+						break;
+					}
+				}
+			}
+			canvas.showImage(frame);
+			Thread.sleep(200);// 图像刷新时间
+		}
+		grabber.stop();
+		grabber.close();
 	}
 
 	private static Map<String, INDArray> loadFaceTag(String faceTagDir, Recognizer recognizer) throws Exception {
@@ -60,7 +89,7 @@ public class DetectInCamera {
 		}
 		Collection<File> images = FileUtils.listFiles(dir, new String[] { "jpg" }, false);
 		for (File image : images) {
-			INDArray factor = recognizer.getFaceFactor(ImageIO.read(image), FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
+			INDArray factor = recognizer.getFaceFactor(ImageIO.read(image), FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT)[0];
 			String name = StringUtils.substringBeforeLast(image.getName(), ".");
 			faceTagMap.put(name, factor);
 			log.info("tag face loaded: {}", image.getName());
