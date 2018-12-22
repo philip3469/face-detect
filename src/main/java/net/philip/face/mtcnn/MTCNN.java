@@ -1,10 +1,9 @@
 package net.philip.face.mtcnn;
 
-import static org.nd4j.linalg.indexing.NDArrayIndex.all;
-import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
-import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.nd4j.linalg.indexing.NDArrayIndex.all;
+import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -47,8 +46,8 @@ public class MTCNN {
 	private static final String ONetInName = "onet/input:0";
 	private static final String[] ONetOutName = new String[] { "onet/prob1:0", "onet/conv6-2/conv6-2:0",
 			"onet/conv6-3/conv6-3:0" };
-	// 安卓相关
-	public long lastProcessTime; // �?后一张图片处理的时间ms
+
+	public long lastProcessTime; //最后一张图片处理的时间ms
 
 	public void loadModel() throws Exception {
 
@@ -123,14 +122,14 @@ public class MTCNN {
 		return resizeImg;
 	}
 
-	// 输入前要翻转，输出也要翻�?
+	// 输入前要翻转，输出也要翻转
 	private int PNetForward(BufferedImage image, float[][] PNetOutProb, float[][][] PNetOutBias) {
 		int w = image.getWidth();
 		int h = image.getHeight();
 
 		float[] PNetIn = normalizeImage(image);
 		//翻转后变成w*h*stride
-		Utils.flip_diag(PNetIn, h, w, 3); // 沿着对角线翻�?
+		Utils.flip_diag(PNetIn, h, w, 3); // 沿着对角线翻转
 		// inferenceInterface.feed(PNetInName,PNetIn,1,w,h,3);
 		// inferenceInterface.run(PNetOutName,false);
 
@@ -152,13 +151,13 @@ public class MTCNN {
 		PNetOutP = out0.data().asFloat();
 		PNetOutB = out1.data().asFloat();
 
-		// 【写法一】先翻转，后转为2/3维数�?
+		// 【写法一】先翻转，后转为2/3维数组
 		Utils.flip_diag(PNetOutP, PNetOutSizeW, PNetOutSizeH, 2);
 		Utils.flip_diag(PNetOutB, PNetOutSizeW, PNetOutSizeH, 4);
 		Utils.expand(PNetOutB, PNetOutBias);
 		Utils.expandProb(PNetOutP, PNetOutProb);
 		/*
-		 * 【写法二】这个比较快，快�?3ms。意义不大，用上面的方法比较直观 for (int y=0;y<PNetOutSizeH;y++) for
+		 * 【写法二】这个比较快。意义不大，用上面的方法比较直观 for (int y=0;y<PNetOutSizeH;y++) for
 		 * (int x=0;x<PNetOutSizeW;x++){ int idx=PNetOutSizeH*x+y;
 		 * PNetOutProb[y][x]=PNetOutP[idx*2+1]; for(int i=0;i<4;i++)
 		 * PNetOutBias[y][x][i]=PNetOutB[idx*4+i]; }
@@ -192,7 +191,7 @@ public class MTCNN {
 						else if (method.equals("Min")) {
 							iou = 1.0f * areaIoU / (min(box.area(), box2.area()));
 						}
-						if (iou >= threshold) { // 删除prob小的那个�?
+						if (iou >= threshold) { // 删除prob小的那个
 							if (box.score > box2.score)
 								box2.deleted = true;
 							else
@@ -473,7 +472,7 @@ public class MTCNN {
 		
 		for(int i = 0;i < ret.length;i++) {
 			Box box = faces.get(i);
-			ret[i] = imresample(imageLoader.asMatrix(image).get(all(), all(), interval(box.top(), box.top()+box.height()), interval(box.left(),box.left()+box.width())).dup(), height, width);
+			ret[i] = imresample(imageLoader.asMatrix(image).get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), height, width);
 		}
 		return ret;
 	}

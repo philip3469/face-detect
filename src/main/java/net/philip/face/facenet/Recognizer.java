@@ -13,6 +13,8 @@ import net.philip.face.mtcnn.MTCNN;
 
 public class Recognizer {
 	private static final Logger log = LoggerFactory.getLogger(Recognizer.class);
+	//人脸检测窗口最小size
+	private int minFaceSize = 40;
 
 	private ComputationGraph facenet;
 	private MTCNN mtcnn;
@@ -44,7 +46,7 @@ public class Recognizer {
 	 */
 	public INDArray getFaceFactor(BufferedImage img, int width, int height) throws Exception {
 
-		INDArray[] detection = mtcnn.detect(img, 40, 160, 160);
+		INDArray[] detection = mtcnn.detect(img, minFaceSize, height, width);
 		if (detection == null || detection.length == 0) {
 			log.error("no face detected in image file:{}", img);
 			return null;
@@ -58,5 +60,5 @@ public class Recognizer {
 		INDArray output[] = facenet.output(InceptionResNetV1.prewhiten(detection[0]));
 		return output[1];
 	}
-
+	
 }

@@ -17,10 +17,11 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.tensorflow" level="DEBUG"/>
-	<logger name="org.nd4j.tensorflow" level="DEBUG"/>
-	<logger name="org.apache.catalina.core" level="DEBUG"/>
-	<logger name="org.springframework" level="DEBUG"/>
+	<logger name="net.philip" level="INFO"/>
+	<logger name="org.tensorflow" level="INFO"/>
+	<logger name="org.nd4j.tensorflow" level="INFO"/>
+	<logger name="org.apache.catalina.core" level="INFO"/>
+	<logger name="org.springframework" level="INFO"/>
 	<logger name="org.deeplearning4j" level="INFO"/>
 	<logger name="org.canova" level="INFO"/>
 	<logger name="org.datavec" level="INFO"/>
@@ -30,9 +31,8 @@
 	<logger name="org.cleartk" level="OFF"/>
 
 
-	<root level="ERROR">
+	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
-		<appender-ref ref="FILE"/>
 	</root>
 
 </configuration>
