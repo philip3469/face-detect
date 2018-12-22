@@ -384,6 +384,6 @@ public class InceptionResNetV1 extends AbstractModel {
 
 	@Override
 	protected InputStream getModelDataInputStream() throws IOException {
-		return new MultiResouceInputStream("InceptionResNetV1Data");
+		return new MultiResouceInputStream("model/facenet/InceptionResNetV1Data");
 	}
 }
