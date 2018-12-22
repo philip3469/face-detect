@@ -54,28 +54,28 @@ public class DetectInCamera {
 			BufferedImage image = new BufferedImage(camera_size, camera_size, BufferedImage.TYPE_3BYTE_BGR);
 			Java2DFrameConverter.copy(frame, image);
 
-			INDArray testFacefactor = recognizer.getFaceFactor(image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT)[0];
-
+			INDArray[] testFacefactors = recognizer.getFaceFactor(image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
+			
 			// Vector<Box> detectFaces = recognizer.detectFaces(image);
 
-			if (null != testFacefactor) {
+			if (null != testFacefactors) {
 				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
 				while (it.hasNext()) {
 					Entry<String, INDArray> next = it.next();
 					String name = next.getKey();
 					INDArray faceTagFactor = next.getValue();
-					double diff = faceCompareLoss(testFacefactor, faceTagFactor);
+					double diff = faceCompareLoss(testFacefactors[0], faceTagFactor);
 					if (diff < 1.1) {
 						// match
 						log.info("test face is: " + name + ", face compare loss is: " + diff);
 						// show detection result
-
+						canvas.setTitle(name);
 						break;
 					}
 				}
 			}
 			canvas.showImage(frame);
-			Thread.sleep(200);// 图像刷新时间
+			Thread.sleep(50);// 图像刷新时间
 		}
 		grabber.stop();
 		grabber.close();
