@@ -34,6 +34,7 @@ public class DetectInCamera {
 	private static final String FACE_TAG_DIR = "d:/face_tag";
 	private static final int FACE_RESIZE_WIDTH = 160;
 	private static final int FACE_RESIZE_HEIGHT = 160;
+	private static final double FACE_LOSS_VALUE = 0.6;
 
 	public static void main(String[] args) throws Exception {
 
@@ -62,32 +63,24 @@ public class DetectInCamera {
 			for (Box box : detectFaces) {
 				INDArray factor = recognizer.getFaceFactor(box, image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
 				
-				double minLoss = 1;
-				String minLossName = null;
 				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
 				while (it.hasNext()) {
 					Entry<String, INDArray> next = it.next();
 					String name = next.getKey();
 					INDArray faceTagFactor = next.getValue();
-					double diff = faceCompareLoss(factor, faceTagFactor);
-					if (diff < minLoss) {
-						minLoss=diff;
-						minLossName=name;
+					double loss = faceCompareLoss(factor, faceTagFactor);
+					if(loss<=FACE_LOSS_VALUE){
+						// match
+						log.info("test face is: " + name + ", face compare loss is: " + loss);
+						// show detection result
+						Graphics g = image.getGraphics();
+						g.setColor(Color.RED);
+						g.drawRect(box.left(), box.top(), box.width(),
+								box.height());
+						g.drawString(name, box.left() + 5, box.top() + 15);
+						Java2DFrameConverter.copy(image, frame);
 					}
 				}
-		
-				if(null != minLossName){
-					// match
-					log.info("test face is: " + minLossName + ", face compare loss is: " + minLoss);
-					// show detection result
-					Graphics g = image.getGraphics();
-					g.setColor(Color.RED);
-					g.drawRect(box.left(), box.top(), box.width(),
-							box.height());
-					g.drawString(minLossName, box.left() + 5, box.top() + 15);
-					Java2DFrameConverter.copy(image, frame);
-				}
-				 
 			}
 
 			canvas.showImage(frame);
