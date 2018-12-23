@@ -82,7 +82,7 @@ public class DetectInCamera {
 			}
 
 			canvas.showImage(frame);
-			Thread.sleep(50);// 图像刷新时间
+			Thread.sleep(20);// 图像刷新时间
 		}
 		grabber.stop();
 		grabber.close();

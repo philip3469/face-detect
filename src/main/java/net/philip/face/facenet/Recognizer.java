@@ -48,14 +48,8 @@ public class Recognizer {
 	}
 
 	/**
-	 * 获取面部特征因子
-	 * 
+	 * 获取面部欧式距离特征因子
 	 * @param img
-	 *            源图像
-	 * @param width
-	 *            缩放头像宽
-	 * @param height
-	 *            缩放头像高
 	 * @return
 	 * @throws Exception
 	 */
@@ -78,10 +72,12 @@ public class Recognizer {
 	}
 	
 	public INDArray getFaceFactor(Box box, BufferedImage img) throws Exception {
-		
+		long start = System.currentTimeMillis();
 		INDArray imgData = imageLoader.asMatrix(img);
 		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
-		return facenet.output(InceptionResNetV1.prewhiten(face))[1];
+		INDArray factor = facenet.output(InceptionResNetV1.prewhiten(face))[1];
+		System.out.println("[**]Facenet Detection Time:" + (System.currentTimeMillis() - start));
+		return factor;
 	}
 
 	public Vector<Box> detectFaces(BufferedImage img) {
