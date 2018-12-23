@@ -28,13 +28,11 @@ public class FaceRecognizeTest {
 		BufferedImage img2 = ImageIO.read(new FileInputStream(dir + "fbb2.jpg"));
 		INDArray factor1 = recognizer.getFaceFactor(img1, width, height)[0];
 		INDArray factor2 = recognizer.getFaceFactor(img2, width, height)[0];
-		System.out.println(calImgLoss(factor1, factor2));
-	}
 
-	private double calImgLoss(INDArray img1, INDArray img2) {
-		INDArray tmp = img1.sub(img2);
-		tmp = tmp.mul(tmp).sum(1);
-		return tmp.getDouble(0);
+		// face euclidean distance
+		double distance = factor1.distance2(factor2);
+		System.out.println("distance is " + distance);
+		System.out.println(distance < 0.6 ? "match" : "not match");
 	}
 
 }

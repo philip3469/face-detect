@@ -104,6 +104,7 @@ public class InceptionResNetV1 extends AbstractModel {
 					.getResourceAsStream(currResource); 
 		}
 		
+		@Override
 		public int read(byte[] b, int off, int len) throws IOException{
 			if(in == null){
 				return -1;

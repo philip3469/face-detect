@@ -62,7 +62,7 @@ public class DetectInCamera {
 			for (Box box : detectFaces) {
 				INDArray factor = recognizer.getFaceFactor(box, image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
 				
-				double minLoss = 1.1;
+				double minLoss = 1;
 				String minLossName = null;
 				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
 				while (it.hasNext()) {
@@ -81,7 +81,7 @@ public class DetectInCamera {
 					log.info("test face is: " + minLossName + ", face compare loss is: " + minLoss);
 					// show detection result
 					Graphics g = image.getGraphics();
-					g.setColor(Color.YELLOW);
+					g.setColor(Color.RED);
 					g.drawRect(box.left(), box.top(), box.width(),
 							box.height());
 					g.drawString(minLossName, box.left() + 5, box.top() + 15);
@@ -118,10 +118,9 @@ public class DetectInCamera {
 		return faceTagMap;
 	}
 
+	//euclidean distance
 	private static double faceCompareLoss(INDArray face1, INDArray face2) {
-		INDArray tmp = face1.sub(face2);
-		tmp = tmp.mul(tmp).sum(1);
-		return tmp.getDouble(0);
+		return face1.distance2(face2);
 	}
 
 }
