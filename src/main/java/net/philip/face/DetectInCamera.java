@@ -32,8 +32,6 @@ public class DetectInCamera {
 	private static final Logger log = LoggerFactory.getLogger(DetectInCamera.class);
 
 	private static final String FACE_TAG_DIR = "d:/face_tag";
-	private static final int FACE_RESIZE_WIDTH = 160;
-	private static final int FACE_RESIZE_HEIGHT = 160;
 	private static final double FACE_LOSS_VALUE = 0.6;
 
 	public static void main(String[] args) throws Exception {
@@ -61,7 +59,7 @@ public class DetectInCamera {
 
 			Vector<Box> detectFaces = recognizer.detectFaces(image);
 			for (Box box : detectFaces) {
-				INDArray factor = recognizer.getFaceFactor(box, image, FACE_RESIZE_WIDTH, FACE_RESIZE_HEIGHT);
+				INDArray factor = recognizer.getFaceFactor(box, image);
 				
 				Iterator<Entry<String, INDArray>> it = faceTagMap.entrySet().iterator();
 				while (it.hasNext()) {
@@ -98,8 +96,7 @@ public class DetectInCamera {
 		}
 		Collection<File> images = FileUtils.listFiles(dir, new String[] { "jpg" }, false);
 		for (File image : images) {
-			INDArray[] faceFactors = recognizer.getFaceFactor(ImageIO.read(image), FACE_RESIZE_WIDTH,
-					FACE_RESIZE_HEIGHT);
+			INDArray[] faceFactors = recognizer.getFaceFactor(ImageIO.read(image));
 			if (null == faceFactors) {
 				log.error("no face dected in {}", image.getName());
 				continue;

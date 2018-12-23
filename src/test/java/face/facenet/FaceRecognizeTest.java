@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 
 import javax.imageio.ImageIO;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -22,17 +23,15 @@ public class FaceRecognizeTest {
 
 	@Test
 	public void cutFaceAndCompareTest() throws Exception {
-		int width = 160;
-		int height = 160;
 		BufferedImage img1 = ImageIO.read(new FileInputStream(dir + "fbb1.jpg"));
 		BufferedImage img2 = ImageIO.read(new FileInputStream(dir + "fbb2.jpg"));
-		INDArray factor1 = recognizer.getFaceFactor(img1, width, height)[0];
-		INDArray factor2 = recognizer.getFaceFactor(img2, width, height)[0];
+		INDArray factor1 = recognizer.getFaceFactor(img1)[0];
+		INDArray factor2 = recognizer.getFaceFactor(img2)[0];
 
 		// face euclidean distance
 		double distance = factor1.distance2(factor2);
 		System.out.println("distance is " + distance);
-		System.out.println(distance < 0.6 ? "match" : "not match");
+		Assert.assertTrue(distance < 0.6);
 	}
 
 }

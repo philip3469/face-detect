@@ -23,7 +23,9 @@ public class Recognizer {
 
 	private static NativeImageLoader imageLoader = new NativeImageLoader();
 	// 人脸检测窗口最小size
-	private int minFaceSize = 40;
+	private int MTCNN_MIN_FACE_SIZE = 40;
+	//face net图像缩放大小
+	private int FACE_NET_SQUARE_SIZE = 160;
 
 	private ComputationGraph facenet;
 	private MTCNN mtcnn;
@@ -57,9 +59,9 @@ public class Recognizer {
 	 * @return
 	 * @throws Exception
 	 */
-	public INDArray[] getFaceFactor(BufferedImage img, int width, int height) throws Exception {
+	public INDArray[] getFaceFactor(BufferedImage img) throws Exception {
 
-		Vector<Box> faceBoxies = mtcnn.detectFaces(img, minFaceSize);
+		Vector<Box> faceBoxies = mtcnn.detectFaces(img, MTCNN_MIN_FACE_SIZE);
 
 		if (CollectionUtils.isEmpty(faceBoxies)) {
 			log.error("no face detected in image file:{}", img);
@@ -69,21 +71,21 @@ public class Recognizer {
 		INDArray[] output = new INDArray[faceBoxies.size()];
 		for(int i=0;i<faceBoxies.size();i++){
 			Box box = faceBoxies.get(i);
-			INDArray face = imresample(imageLoader.asMatrix(img).get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), height, width);
+			INDArray face = imresample(imageLoader.asMatrix(img).get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
 			output[i] = facenet.output(InceptionResNetV1.prewhiten(face))[1];
 		}
 		return output;
 	}
 	
-	public INDArray getFaceFactor(Box box, BufferedImage img, int width, int height) throws Exception {
+	public INDArray getFaceFactor(Box box, BufferedImage img) throws Exception {
 		
 		INDArray imgData = imageLoader.asMatrix(img);
-		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), height, width);
+		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
 		return facenet.output(InceptionResNetV1.prewhiten(face))[1];
 	}
 
 	public Vector<Box> detectFaces(BufferedImage img) {
-		return mtcnn.detectFaces(img, minFaceSize);
+		return mtcnn.detectFaces(img, MTCNN_MIN_FACE_SIZE);
 	}
 
 	private INDArray imresample(INDArray img, int hs, int ws) {
