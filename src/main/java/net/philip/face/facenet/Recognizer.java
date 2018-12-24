@@ -63,21 +63,21 @@ public class Recognizer {
 			log.error("no face detected in image file:{}", image);
 			return null;
 		}
-
+		INDArray imageData = imageLoader.asMatrix(image);
 		INDArray[] output = new INDArray[faceBoxies.size()];
 		for (int i = 0; i < faceBoxies.size(); i++) {
 			Box box = faceBoxies.get(i);
-			INDArray face = imresample(
-					imageLoader.asMatrix(image)
-							.get(all(), all(), interval(Math.abs(box.top()), box.top() + box.height()),
-									interval(Math.abs(box.left()), box.left() + box.width()))
-							.dup(),
+			// resize face to 160X160
+			INDArray face = imresample(imageData.get(all(), all(), 
+									interval(Math.abs(box.top()), box.top() + box.height()),
+									interval(Math.abs(box.left()), box.left() + box.width())),
 					FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
-			output[i] = facenet.output(InceptionResNetV1.prewhiten(face))[1];
+			INDArray prewhiten = InceptionResNetV1.prewhiten(face);
+			output[i] = facenet.output(prewhiten)[1];
 		}
 		return output;
 	}
-
+	
 	/**
 	 * get boxed face euclidean factor from input image
 	 * 
@@ -92,7 +92,7 @@ public class Recognizer {
 		// resize face to 160X160
 		INDArray face = imresample(
 				imageData.get(all(), all(), interval(Math.abs(box.top()), box.top() + box.height()),
-						interval(Math.abs(box.left()), box.left() + box.width())).dup(),
+						interval(Math.abs(box.left()), box.left() + box.width())),
 				FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
 
 		// debug show resized face

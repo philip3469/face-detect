@@ -22,7 +22,7 @@ public class FaceRecognizeTest {
 	@Test
 	public void cutFaceAndCompareTest() throws Exception {
 		BufferedImage img1 = ImageUtil.loadImage(dir + "/facenet/fbb1.jpg");
-		BufferedImage img2 = ImageUtil.loadImage(dir + "/facenet/fbb1.jpg");
+		BufferedImage img2 = ImageUtil.loadImage(dir + "/facenet/fbb2.jpg");
 		INDArray factor1 = recognizer.getFaceFactor(img1)[0];
 		INDArray factor2 = recognizer.getFaceFactor(img2)[0];
 
@@ -32,10 +32,11 @@ public class FaceRecognizeTest {
 		Assert.assertTrue(distance < 0.6);
 	}
 
+	@Test
 	public void getFaceFactor() throws Exception{
 		BufferedImage image = ImageUtil.loadImage(dir + "/pivotal-ipo-nyse.jpg");
 		INDArray[] factors = recognizer.getFaceFactor(image);
-		Assert.assertEquals(6, factors.length);
+		Assert.assertEquals(8, factors.length);
 	}
 
 }
