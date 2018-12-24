@@ -2,13 +2,38 @@ package net.philip.face;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
+import javax.imageio.ImageIO;
 import javax.swing.WindowConstants;
 
 import org.bytedeco.javacv.CanvasFrame;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 public class ImageUtil {
+	
+	/**
+	 * face euclidean distance
+	 * @param factor1
+	 * @param factor2
+	 * @return
+	 */
+	public static double faceEuclideanDistance(INDArray factor1, INDArray factor2){
+		return factor1.distance2(factor2);
+	}
+
+	/**
+	 * load image
+	 * @param filePath
+	 * @return
+	 * @throws Exception
+	 */
+	public static BufferedImage loadImage(String filePath) throws Exception {
+		try (InputStream fis = new FileInputStream(filePath)) {
+			return ImageIO.read(fis);
+		}
+	}
 
 	/**
 	 * show frame in canvas

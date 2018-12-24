@@ -25,7 +25,7 @@ public class Recognizer {
 	private static NativeImageLoader imageLoader = new NativeImageLoader();
 	// 人脸检测窗口最小size
 	private int MTCNN_MIN_FACE_SIZE = 40;
-	//face net图像缩放大小
+	// face net图像缩放大小
 	private int FACE_NET_SQUARE_SIZE = 160;
 
 	private ComputationGraph facenet;
@@ -49,35 +49,56 @@ public class Recognizer {
 	}
 
 	/**
-	 * 获取面部欧式距离特征因子
-	 * @param img
+	 * get all face euclidean factor from input image
+	 * 
+	 * @param image
 	 * @return
 	 * @throws Exception
 	 */
-	public INDArray[] getFaceFactor(BufferedImage img) throws Exception {
+	public INDArray[] getFaceFactor(BufferedImage image) throws Exception {
 
-		Vector<Box> faceBoxies = mtcnn.detectFaces(img, MTCNN_MIN_FACE_SIZE);
+		Vector<Box> faceBoxies = mtcnn.detectFaces(image, MTCNN_MIN_FACE_SIZE);
 
 		if (CollectionUtils.isEmpty(faceBoxies)) {
-			log.error("no face detected in image file:{}", img);
+			log.error("no face detected in image file:{}", image);
 			return null;
 		}
 
 		INDArray[] output = new INDArray[faceBoxies.size()];
-		for(int i=0;i<faceBoxies.size();i++){
+		for (int i = 0; i < faceBoxies.size(); i++) {
 			Box box = faceBoxies.get(i);
-			INDArray face = imresample(imageLoader.asMatrix(img).get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
+			INDArray face = imresample(
+					imageLoader.asMatrix(image)
+							.get(all(), all(), interval(Math.abs(box.top()), box.top() + box.height()),
+									interval(Math.abs(box.left()), box.left() + box.width()))
+							.dup(),
+					FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
 			output[i] = facenet.output(InceptionResNetV1.prewhiten(face))[1];
 		}
 		return output;
 	}
-	
-	public INDArray getFaceFactor(Box box, BufferedImage img) throws Exception {
+
+	/**
+	 * get boxed face euclidean factor from input image
+	 * 
+	 * @param box
+	 * @param image
+	 * @return
+	 * @throws Exception
+	 */
+	public INDArray getFaceFactor(Box box, BufferedImage image) throws Exception {
 		long start = System.currentTimeMillis();
-		INDArray imgData = imageLoader.asMatrix(img);
-		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
-//		ImageUtil.showFrame(face);
-		INDArray factor = facenet.output(InceptionResNetV1.prewhiten(face))[1];
+		INDArray imageData = imageLoader.asMatrix(image);
+		// resize face to 160X160
+		INDArray face = imresample(
+				imageData.get(all(), all(), interval(Math.abs(box.top()), box.top() + box.height()),
+						interval(Math.abs(box.left()), box.left() + box.width())).dup(),
+				FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
+
+		// debug show resized face
+		// ImageUtil.showFrame(face);
+
+		INDArray factor = facenet.output(InceptionResNetV1.prewhiten(face))[1];// run facenet model
 		System.out.println("[**]Facenet Detection Time:" + (System.currentTimeMillis() - start));
 		return factor;
 	}

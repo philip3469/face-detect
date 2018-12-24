@@ -28,7 +28,7 @@ public class MTCNN {
 	private float RNetThreshold = 0.7f;
 	private float ONetThreshold = 0.7f;
 	// MODEL PATH
-	private static final String MODEL_FILE = "model/mtcnn_freezed_model.pb";
+	private static final String MODEL_FILE = "model/mtcnn/mtcnn_freezed_model.pb";
 
 	private GraphRunner proposeNetGraphRunner = null;
 	private GraphRunner refineNetGraphRunner = null;
