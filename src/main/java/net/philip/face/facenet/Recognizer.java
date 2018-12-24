@@ -2,6 +2,7 @@ package net.philip.face.facenet;
 
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Vector;
@@ -75,6 +76,7 @@ public class Recognizer {
 		long start = System.currentTimeMillis();
 		INDArray imgData = imageLoader.asMatrix(img);
 		INDArray face = imresample(imgData.get(all(), all(), interval(Math.abs(box.top()), box.top()+box.height()), interval(Math.abs(box.left()),box.left()+box.width())).dup(), FACE_NET_SQUARE_SIZE, FACE_NET_SQUARE_SIZE);
+//		ImageUtil.showFrame(face);
 		INDArray factor = facenet.output(InceptionResNetV1.prewhiten(face))[1];
 		System.out.println("[**]Facenet Detection Time:" + (System.currentTimeMillis() - start));
 		return factor;
