@@ -20,7 +20,7 @@
 		<tensorflow.version>1.11.0</tensorflow.version>
 		<javacpp-presets.version>1.4.3</javacpp-presets.version>
 
-		<apache.commons>1.17</apache.commons>
+		<apache.commons>1.18</apache.commons>
 		<spring-framework.version>5.1.1.RELEASE</spring-framework.version>
 		<jackson.version>2.9.6</jackson.version>
 	</properties>
