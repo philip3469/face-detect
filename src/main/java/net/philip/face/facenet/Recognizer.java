@@ -26,7 +26,7 @@ public class Recognizer {
 	// 人脸检测窗口最小size
 	private int MTCNN_MIN_FACE_SIZE = 40;
 	// face net图像缩放大小
-	private int FACE_NET_SQUARE_SIZE = 160;
+	private int FACE_NET_SQUARE_SIZE = InceptionResNetV1.FACE_SIZE;
 
 	private ComputationGraph facenet;
 	private MTCNN mtcnn;

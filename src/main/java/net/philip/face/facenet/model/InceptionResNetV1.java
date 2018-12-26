@@ -35,6 +35,8 @@ import net.philip.face.facenet.model.customer.ActivationLinear;
 import net.philip.face.facenet.model.customer.ActivationReverse;
 
 public class InceptionResNetV1 extends AbstractModel {
+	
+	public static final int FACE_SIZE = 160;
 	private long[] inputShape;
 
 	public InceptionResNetV1(long... inputShape) throws Exception {
@@ -43,7 +45,7 @@ public class InceptionResNetV1 extends AbstractModel {
 	}
 
 	public InceptionResNetV1() throws Exception {
-		this(new long[] { 160, 160, 3 });
+		this(new long[] { FACE_SIZE, FACE_SIZE, 3 });
 	}
 
 

@@ -41,7 +41,7 @@ public class DetectInCamera {
 		Map<String, INDArray> faceTagMap = loadFaceTag(FACE_TAG_DIR, recognizer);
 
 		// camera detect
-		int camera_size = 800;
+		int camera_size = 400;
 		OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
 		grabber.setImageWidth(camera_size);
 		grabber.setImageHeight(camera_size);
