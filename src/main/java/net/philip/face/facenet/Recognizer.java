@@ -103,7 +103,7 @@ public class Recognizer {
 		return factor;
 	}
 
-	public Vector<Box> detectFaces(BufferedImage img) {
+	public Vector<Box> detectFaces(BufferedImage img) throws Exception {
 		return mtcnn.detectFaces(img, MTCNN_MIN_FACE_SIZE);
 	}
 

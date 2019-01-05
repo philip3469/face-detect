@@ -9,9 +9,16 @@ import javax.imageio.ImageIO;
 import javax.swing.WindowConstants;
 
 import org.bytedeco.javacv.CanvasFrame;
+import org.datavec.image.loader.NativeImageLoader;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 public class ImageUtil {
+	
+	private static NativeImageLoader imageLoader = new NativeImageLoader();
+	
+	public static INDArray loadImage(BufferedImage image) throws Exception{
+		return imageLoader.asMatrix(image);
+	}
 	
 	/**
 	 * face euclidean distance

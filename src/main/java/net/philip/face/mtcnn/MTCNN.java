@@ -2,6 +2,8 @@ package net.philip.face.mtcnn;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.nd4j.linalg.indexing.NDArrayIndex.all;
+import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -19,6 +21,8 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.tensorflow.conversion.graphrunner.GraphRunner;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.tensorflow.framework.ConfigProto;
+
+import net.philip.face.ImageUtil;
 
 public class MTCNN {
 	
@@ -65,28 +69,18 @@ public class MTCNN {
 					String.format("Failed to load TF model [%s] and input [%s]:", tensorflowModelUri, inputLabel), e);
 		}
 	}
-
-	// 读取BufferedImage像素值，预处�?(-127.5 /128)，转化为�?维数组返�?
-	private float[] normalizeImage(BufferedImage image) {
+	
+	//归一化
+	private float[] normalizeImage(BufferedImage image) throws Exception {
 		int w = image.getWidth();
 		int h = image.getHeight();
-		float[] floatValues = new float[w * h * 3];
-		int[] intValues = new int[w * h];
-		// BufferedImage.getPixels(intValues,0,BufferedImage.getWidth(),0,0,BufferedImage.getWidth(),BufferedImage.getHeight());
-
-		// pixel = rgbArray[offset + (y-startY)*scansize + (x-startX)];
-		image.getRGB(0, 0, w, h, intValues, 0, w);
-
-		float imageMean = 127.5f;
-		float imageStd = 128;
-
-		for (int i = 0; i < intValues.length; i++) {
-			final int val = intValues[i];
-			floatValues[i * 3 + 0] = (((val >> 16) & 0xFF) - imageMean) / imageStd;
-			floatValues[i * 3 + 1] = (((val >> 8) & 0xFF) - imageMean) / imageStd;
-			floatValues[i * 3 + 2] = ((val & 0xFF) - imageMean) / imageStd;
-		}
-		return floatValues;
+		INDArray data = ImageUtil.loadImage(image);
+		//3HW -> HW3
+		INDArray permute = data.get(point(0), all(), all(), all()).permute(1,2,0);
+		//[r,g,b,r,g,b...]
+		//[r,g,b,r,g,b...]
+		INDArray reshape = permute.reshape(new int[]{h,3*w});
+		return reshape.sub(127.5f).div(128f).data().asFloat();
 	}
 
 	/*
@@ -119,7 +113,7 @@ public class MTCNN {
 	}
 
 	// 输入前要翻转，输出也要翻转
-	private int PNetForward(BufferedImage image, float[][] PNetOutProb, float[][][] PNetOutBias) {
+	private int PNetForward(BufferedImage image, float[][] PNetOutProb, float[][][] PNetOutBias) throws Exception {
 		int w = image.getWidth();
 		int h = image.getHeight();
 
@@ -128,9 +122,7 @@ public class MTCNN {
 		Utils.flip_diag(PNetIn, h, w, 3); // 沿着对角线翻转
 		// inferenceInterface.feed(PNetInName,PNetIn,1,w,h,3);
 		// inferenceInterface.run(PNetOutName,false);
-
 		INDArray pIn = Nd4j.create(PNetIn, new int[] {1, w, h, 3 });
-		
 		Map<String, INDArray> resultMap = this.proposeNetGraphRunner.run(Collections.singletonMap(PNetInName, pIn));
 		INDArray out0 = resultMap.get(PNetOutName[0]);
 		INDArray out1 = resultMap.get(PNetOutName[1]);
@@ -141,9 +133,7 @@ public class MTCNN {
 		float[] PNetOutB = new float[PNetOutSizeW * PNetOutSizeH * 4];
 		// inferenceInterface.fetch(PNetOutName[0],PNetOutP);
 		// inferenceInterface.fetch(PNetOutName[1],PNetOutB);
-
 		
-//		Nd4j.toFlattened(out0).
 		PNetOutP = out0.data().asFloat();
 		PNetOutB = out1.data().asFloat();
 
@@ -239,7 +229,7 @@ public class MTCNN {
 	 * For all candidates , use NMS with threshold=0.7 (3) Calibrate Bounding
 	 * Box 注意：CNN输入图片�?上面�?行，坐标为[0..width,0]。所以BufferedImage�?要对折后再跑网络;网络输出同理.
 	 */
-	private Vector<Box> PNet(BufferedImage image, int minSize) {
+	private Vector<Box> PNet(BufferedImage image, int minSize) throws Exception {
 		int whMin = min(image.getWidth(), image.getHeight());
 		float currentFaceSize = minSize; // currentFaceSize=minSize/(factor^k)
 											// k=0,1,2... until excced whMin
@@ -452,7 +442,7 @@ public class MTCNN {
 	/*
 	 * 参数�? BufferedImage:要处理的图片 minFaceSize:�?小的人脸像素�?.(此�?�越大，�?测越�?) 返回�? 人脸�?
 	 */
-	public Vector<Box> detectFaces(BufferedImage image, int minFaceSize) {
+	public Vector<Box> detectFaces(BufferedImage image, int minFaceSize) throws Exception {
 		long t_start = System.currentTimeMillis();
 		// �?1】PNet generate candidate boxes
 		Vector<Box> boxes = PNet(image, minFaceSize);
